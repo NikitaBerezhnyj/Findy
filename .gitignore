@@ -1,0 +1,26 @@
+# Build output
+bin/
+obj/
+
+# Visual Studio
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / ReSharper
+*.DotSettings.user
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Android
+*.apk
+*.aab
+
+# macOS
+*.DS_Store
