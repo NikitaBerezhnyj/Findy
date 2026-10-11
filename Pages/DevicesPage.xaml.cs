@@ -52,6 +52,6 @@ public partial class DevicesPage : ContentPage
     async void OnLinkClicked(object? sender, EventArgs e)
     {
         if ((sender as BindableObject)?.BindingContext is not DevicesItem item) return;
-        await DisplayAlertAsync("Тип зв'язку", item.LinkHelp, "OK");
+        await DisplayAlertAsync("Connection type", item.LinkHelp, "OK");
     }
 }

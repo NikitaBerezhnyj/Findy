@@ -5,7 +5,7 @@
              xmlns:mi="http://www.aathifmahir.com/dotnet/2022/maui/icons"
              x:Class="Findy.Pages.RadarPage"
              x:DataType="vm:RadarViewModel"
-             Title="Пошук">
+             Title="Tracking">
 
     <Grid RowDefinitions="Auto,*,Auto" Padding="24,20,24,28" RowSpacing="20">
         <VerticalStackLayout Spacing="6" HorizontalOptions="Center">

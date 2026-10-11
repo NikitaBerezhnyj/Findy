@@ -38,16 +38,30 @@ public partial class DevicesViewModel : ObservableObject
     {
         if (_subscription is not null) return;
 
-        if (!_bt.IsSupported) { Message = "Bluetooth не підтримується на цьому пристрої."; return; }
-        if (!await _bt.EnsurePermissionsAsync()) { Message = "Потрібен дозвіл на Bluetooth. Дай його в налаштуваннях додатка."; return; }
-        if (!_bt.IsEnabled) { Message = "Bluetooth вимкнено. Увімкни його і натисни «Спробувати знову»."; return; }
+        if (!_bt.IsSupported)
+        {
+            Message = "Bluetooth is not supported on this device.";
+            return;
+        }
+
+        if (!await _bt.EnsurePermissionsAsync())
+        {
+            Message = "Bluetooth permission is required. Grant it in the app settings.";
+            return;
+        }
+
+        if (!_bt.IsEnabled)
+        {
+            Message = "Bluetooth is turned off. Turn it on and tap “Try again”.";
+            return;
+        }
 
         if (_subscription is not null) return;
 
         _scanStartedAt = DateTime.UtcNow;
         _paired = _bt.GetPairedDevices();
         _subscription = _bt.Subscribe(OnSample);
-        if (_subscription is null) { Message = "Не вдалося запустити сканування."; return; }
+        if (_subscription is null) { Message = "Could not start scanning."; return; }
 
         Message = null;
         IsSearching = true;

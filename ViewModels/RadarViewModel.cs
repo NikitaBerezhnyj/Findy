@@ -35,7 +35,7 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
     string? subtitle;
 
     [ObservableProperty] MaterialIcons kindIcon = MaterialIcons.HelpOutline;
-    [ObservableProperty] string status = "Шукаю…";
+    [ObservableProperty] string status = "Searching…";
     [ObservableProperty] string distanceText = "—";
     [ObservableProperty] string trendText = "";
     [ObservableProperty] string rssiText = "";
@@ -58,7 +58,7 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
 
         ResetReading();
         _subscription = _bt.Subscribe(OnSample);
-        if (_subscription is null) { Status = "Не вдалося запустити сканування."; return; }
+        if (_subscription is null) { Status = "Could not start scanning."; return; }
 
         _timer ??= Application.Current!.Dispatcher.CreateTimer();
         _timer.Interval = TimeSpan.FromMilliseconds(250);
@@ -102,14 +102,14 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
         var smoothed = _smoothed!.Value;
         var delta = smoothed - _history.Peek().Rssi;
 
-        Status = "Пристрій знайдено";
+        Status = "Device found";
         DistanceText = FormatDistance(smoothed);
-        TrendText = delta > TrendThresholdDb ? "▲ Ближче"
-                  : delta < -TrendThresholdDb ? "▼ Далі"
-                  : "● Без змін";
+        TrendText = delta > TrendThresholdDb ? "▲ Closer"
+                  : delta < -TrendThresholdDb ? "▼ Farther"
+                  : "● No change";
         SignalLevel = Math.Clamp((smoothed + 95) / 65.0, 0, 1);
         RssiText = $"{smoothed:0} dBm";
-        DebugInfo = $"Сирий RSSI: {_rawRssi} dBm";
+        DebugInfo = $"Raw RSSI: {_rawRssi} dBm";
     }
 
     void OnTick(object? sender, EventArgs e)
@@ -117,7 +117,7 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
         if (_smoothed is not null && DateTime.UtcNow - _lastSeen > LostAfter)
         {
             ResetReading();
-            Status = "Сигнал втрачено";
+            Status = "Signal lost";
             return;
         }
 
@@ -131,7 +131,7 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
         _smoothed = null;
         _dirty = false;
         _history.Clear();
-        Status = "Шукаю…";
+        Status = "Searching…";
         DistanceText = "—";
         TrendText = "";
         RssiText = "";
@@ -144,10 +144,10 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
         var d = Math.Pow(10, (RssiAt1m - rssi) / (10 * PathLoss));
         return d switch
         {
-            < 0.3 => "< 0,3 м",
-            < 3 => $"≈ {d:0.0} м",
-            < 10 => $"≈ {d:0} м",
-            _ => "> 10 м"
+            < 0.3 => "< 0.3 m",
+            < 3 => $"≈ {d:0.0} m",
+            < 10 => $"≈ {d:0} m",
+            _ => "> 10 m"
         };
     }
 }

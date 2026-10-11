@@ -95,7 +95,7 @@ public class BluetoothService
 
 
         (string Category, string Type) info = device is null
-            ? (DeviceKind.Unknown, "Невідомо")
+            ? (DeviceKind.Unknown, "Unknown")
             : _info.GetOrAdd(address, _ => (GetCategory(device), GetLinkType(device)));
 
         var connectable = !OperatingSystem.IsAndroidVersionAtLeast(26) || r.IsConnectable;
@@ -116,10 +116,10 @@ public class BluetoothService
 
     static string GetCategory(BluetoothDevice d) => d.BluetoothClass?.MajorDeviceClass switch
     {
-        MajorDeviceClass.AudioVideo => "Аудіо",
-        MajorDeviceClass.Wearable => "Годинник / браслет",
-        MajorDeviceClass.Phone => "Телефон",
-        MajorDeviceClass.Computer => "Комп'ютер",
+        MajorDeviceClass.AudioVideo => "Audio",
+        MajorDeviceClass.Wearable => "Watch / Band",
+        MajorDeviceClass.Phone => "Phone",
+        MajorDeviceClass.Computer => "Computer",
         _ => DeviceKind.Unknown
     };
 
@@ -128,7 +128,7 @@ public class BluetoothService
         BluetoothDeviceType.Classic => "Classic",
         BluetoothDeviceType.Le => "LE",
         BluetoothDeviceType.Dual => "Dual",
-        _ => "Невідомо"
+        _ => "Unknown"
     };
 
     sealed class Subscription(Action onDispose) : IDisposable

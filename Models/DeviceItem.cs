@@ -37,10 +37,10 @@ public partial class DevicesItem : ObservableObject
 
     public string QualityText => SignalLevel switch
     {
-        >= 0.75 => "Відмінний сигнал",
-        >= 0.5 => "Добрий сигнал",
-        >= 0.25 => "Слабкий сигнал",
-        _ => "Дуже слабкий сигнал"
+        >= 0.75 => "Excellent signal",
+        >= 0.5 => "Good signal",
+        >= 0.25 => "Weak signal",
+        _ => "Very weak signal"
     };
 
     public string LinkHelp
@@ -49,16 +49,16 @@ public partial class DevicesItem : ObservableObject
         {
             var kind = BtType switch
             {
-                "Dual" => "Dual: працює і як Classic, і як BLE. Типово для навушників і телефонів.",
-                "LE" => "LE: працює лише через Bluetooth Low Energy. Типово для годинників, браслетів і маячків.",
-                _ => "Тип зв'язку невідомий."
+                "Dual" => "Dual: works as both Classic and BLE. Typical for earbuds and phones.",
+                "LE" => "LE: works only over Bluetooth Low Energy. Typical for watches, bands and beacons.",
+                _ => "Connection type is unknown."
             };
 
             var chance = IsConnectable
-                ? "Пристрій приймає підключення, тож схожий на навушники, годинник чи телефон. Сигнал видно, отже відстежувати його можна: шанси хороші."
-                : "Пристрій лише розсилає сигнал і не приймає підключення (маячок, трекер, датчик). Відстежувати його можна, але на навушники чи годинник він схожий менше.";
+                ? "The device accepts connections, so it looks like earbuds, a watch or a phone. Its signal is visible, so tracking it should work: good chances."
+                : "The device only broadcasts a signal and does not accept connections (beacon, tracker, sensor). You can track it, but it is less likely to be earbuds or a watch.";
 
-            return $"{kind}\n\n{chance}\n\nЦе оцінка за типом сигналу, а не гарантія.";
+            return $"{kind}\n\n{chance}\n\nThis is an estimate based on the signal type, not a guarantee.";
         }
     }
 
@@ -82,7 +82,7 @@ public partial class DevicesItem : ObservableObject
         if (paired is not null)
         {
             Title = paired.Name;
-            Subtitle = $"Видно як {bleName}";
+            Subtitle = $"Seen as {bleName}";
             if (Category == DeviceKind.Unknown) Category = paired.Category;
         }
         else if (bleName is not null)
@@ -93,7 +93,7 @@ public partial class DevicesItem : ObservableObject
         else
         {
             var tail = Address.Length >= 5 ? Address[^5..] : Address;
-            Title = "Невідомий пристрій";
+            Title = "Unknown device";
             Subtitle = $"ID · {tail}";
         }
     }
