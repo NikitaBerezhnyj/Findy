@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Findy.ViewModels"
+             xmlns:models="clr-namespace:Findy.Models"
+             xmlns:mi="http://www.aathifmahir.com/dotnet/2022/maui/icons"
+             x:Class="Findy.Pages.DevicesPage"
+             x:DataType="vm:DevicesViewModel"
+             Shell.NavBarIsVisible="False"
+             Title="Findy">
+
+    <Grid RowDefinitions="Auto,*" Padding="20,12,20,0" RowSpacing="14">
+        <VerticalStackLayout Spacing="16">
+            <Label FontFamily="OpenSansSemibold" FontSize="26" Margin="0,4,0,0">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Findy" />
+                        <Span Text="." TextColor="{StaticResource Accent}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+
+            <VerticalStackLayout Spacing="6">
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="Пристрої поруч" FontFamily="OpenSansSemibold" FontSize="20" VerticalOptions="Center" />
+                        <Label Style="{StaticResource Muted}" FontSize="12" Text="Підійди ближче до місця пошуку: потрібний пристрій підніметься вгору." />
+                    </VerticalStackLayout>
+                    
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsSearching}" IsVisible="{Binding IsSearching}" WidthRequest="20" HeightRequest="20" VerticalOptions="Center" />
+                </Grid>
+            </VerticalStackLayout>
+
+            <Border Padding="16" IsVisible="{Binding HasMessage}" StrokeShape="RoundRectangle 12">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="{Binding Message}" FontSize="14" />
+                    <Button Text="Спробувати знову" Command="{Binding StartCommand}" CornerRadius="10" HeightRequest="40" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+        
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Items}" SelectionMode="Single" SelectionChanged="OnSelected" Margin="0,4,0,16" ItemsUpdatingScrollMode="KeepScrollOffset" Scrolled="OnScrolled">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:DevicesItem">
+                    <Border Padding="16" Margin="0,0,0,10" StrokeShape="RoundRectangle 16">
+                        <VerticalStackLayout Spacing="12">
+                            
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                                <Border WidthRequest="44" HeightRequest="44" Padding="0"
+                                    VerticalOptions="Center"
+                                    StrokeShape="RoundRectangle 12"
+                                    Stroke="Transparent"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource TrackLight}, Dark={StaticResource TrackDark}}">
+                                    <mi:MauiIcon
+                                        Icon="{Binding KindIcon}"
+                                        IconSize="28"
+                                        IconColor="{StaticResource Accent}"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center" />
+                                </Border>
+
+                                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                    <Label Text="{Binding Title}" FontFamily="OpenSansSemibold" FontSize="15" MaxLines="1" LineBreakMode="TailTruncation" />
+                                    <Label Text="{Binding Subtitle}" IsVisible="{Binding HasSubtitle}" Style="{StaticResource Muted}" FontSize="12" MaxLines="1" LineBreakMode="TailTruncation" />
+                                </VerticalStackLayout>
+                            </Grid>
+
+                            <VerticalStackLayout Spacing="4">
+                                <ProgressBar Progress="{Binding SignalLevel}" HeightRequest="4" />
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="{Binding QualityText}" Style="{StaticResource Muted}" FontSize="11" />
+                                    <Label Grid.Column="1" Text="{Binding RssiText}" Style="{StaticResource Muted}" FontSize="11" />
+                                </Grid>
+                            </VerticalStackLayout>
+
+                            <FlexLayout Wrap="Wrap" Margin="0,2,0,-6">
+                                <Border Margin="0,0,6,6" Padding="10,4" StrokeShape="RoundRectangle 8" Stroke="Transparent" BackgroundColor="{StaticResource AccentSoft}" IsVisible="{Binding IsPaired}">
+                                    <Label Text="Ваш пристрій" FontFamily="OpenSansSemibold" FontSize="11" TextColor="{StaticResource Accent}" />
+                                </Border>
+
+                                <Border Margin="0,0,6,6" Padding="10,4" StrokeShape="RoundRectangle 8" Stroke="Transparent" BackgroundColor="{AppThemeBinding Light={StaticResource TrackLight}, Dark={StaticResource TrackDark}}">
+                                    <Label Text="{Binding KindText}" Style="{StaticResource Muted}" FontSize="11" />
+                                </Border>
+
+                                <Border
+                                    Margin="0,0,6,6"
+                                    Padding="10,6"
+                                    Stroke="Transparent"
+                                    StrokeShape="RoundRectangle 8"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource TrackLight}, Dark={StaticResource TrackDark}}">
+
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnLinkClicked" />
+                                    </Border.GestureRecognizers>
+
+                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                        <mi:MauiIcon
+                                            Icon="{Binding LinkIcon}"
+                                            IconSize="16"
+                                            IconColor="{AppThemeBinding Light={StaticResource MutedLight}, Dark={StaticResource MutedDark}}"
+                                            VerticalOptions="Center" />
+
+                                        <Label
+                                            Text="{Binding LinkChip}"
+                                            Style="{StaticResource Muted}"
+                                            FontSize="11"
+                                            VerticalOptions="Center" />
+
+                                        <mi:MauiIcon
+                                            Icon="{x:Static mi:MaterialIcons.InfoOutline}"
+                                            IconSize="14"
+                                            IconColor="{AppThemeBinding Light={StaticResource MutedLight}, Dark={StaticResource MutedDark}}"
+                                            VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </FlexLayout>
+
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>
