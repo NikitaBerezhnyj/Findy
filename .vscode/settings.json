@@ -6,9 +6,13 @@
         "dotnet",
         "findy",
         "Findy",
+        "github",
+        "GITHUB",
+        "maui",
         "Mvvm",
         "nikitaberezhnyj",
         "rssi",
-        "Rssi"
+        "Rssi",
+        "temurin"
     ]
 }

@@ -1,0 +1,118 @@
+name: Build and Release Findy
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install MAUI Android workload
+        run: dotnet workload install maui-android
+
+      - name: Restore keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > findy.keystore
+
+      - name: Build APK
+        run: >
+          dotnet publish -f net10.0-android -c Release
+          -p:AndroidPackageFormat=apk
+          -p:InstallAndroidDependencies=true
+          -p:AcceptAndroidSDKLicenses=true
+          -p:AndroidKeyStore=true
+          -p:AndroidSigningKeyStore=findy.keystore
+          -p:AndroidSigningKeyAlias=${{ secrets.KEY_ALIAS }}
+          -p:AndroidSigningKeyPass=env:KEY_PASSWORD
+          -p:AndroidSigningStorePass=env:KEYSTORE_PASSWORD
+          -o out/apk
+        env:
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+
+      - name: Build AAB
+        run: >
+          dotnet publish -f net10.0-android -c Release
+          -p:AndroidPackageFormat=aab
+          -p:InstallAndroidDependencies=true
+          -p:AcceptAndroidSDKLicenses=true
+          -p:AndroidKeyStore=true
+          -p:AndroidSigningKeyStore=findy.keystore
+          -p:AndroidSigningKeyAlias=${{ secrets.KEY_ALIAS }}
+          -p:AndroidSigningKeyPass=env:KEY_PASSWORD
+          -p:AndroidSigningStorePass=env:KEYSTORE_PASSWORD
+          -o out/aab
+        env:
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p dist
+          cp "$(find out/apk -name '*Signed.apk' | head -n1)" dist/Findy.apk
+          cp "$(find out/aab -name '*Signed.aab' | head -n1)" dist/Findy.aab
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: findy-build
+          path: dist/*
+
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: build-android
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: findy-build
+          path: ./artifacts
+
+      - name: Get version
+        id: get_version
+        run: |
+          VERSION=$(grep -oPm1 '(?<=<ApplicationDisplayVersion>)[^<]+' Findy.csproj)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          TAG="v$VERSION"
+
+          gh release create "$TAG" \
+            --title "Findy v$VERSION" \
+            --generate-notes \
+            || true
+
+          for file in ./artifacts/*; do
+            gh release upload "$TAG" "$file" --clobber
+          done
