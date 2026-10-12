@@ -35,6 +35,7 @@
                 <VerticalStackLayout Spacing="12">
                     <Label Text="{Binding Message}" FontSize="14" />
                     <Button Text="Try again" Command="{Binding StartCommand}" CornerRadius="10" HeightRequest="40" />
+                    <Button Text="Open settings" Command="{Binding OpenSettingsCommand}" IsVisible="{Binding CanOpenSettings}" CornerRadius="10" HeightRequest="40" />
                 </VerticalStackLayout>
             </Border>
         </VerticalStackLayout>

@@ -8,6 +8,7 @@ public partial class DevicesPage : ContentPage
 {
     readonly DevicesViewModel _vm;
     bool _navigating;
+    Window? _window;
 
     public DevicesPage(DevicesViewModel vm)
     {
@@ -21,14 +22,34 @@ public partial class DevicesPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+
+        _window = Window;
+        if (_window is not null)
+        {
+            _window.Stopped += OnWindowStopped;
+            _window.Resumed += OnWindowResumed;
+        }
+
         await _vm.StartAsync();
     }
 
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
+
+        if (_window is not null)
+        {
+            _window.Stopped -= OnWindowStopped;
+            _window.Resumed -= OnWindowResumed;
+            _window = null;
+        }
+
         _vm.Stop();
     }
+
+    void OnWindowStopped(object? sender, EventArgs e) => _vm.Stop();
+
+    async void OnWindowResumed(object? sender, EventArgs e) => await _vm.StartAsync();
 
     async void OnSelected(object? sender, SelectionChangedEventArgs e)
     {

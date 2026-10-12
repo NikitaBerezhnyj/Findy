@@ -18,6 +18,7 @@ public partial class DevicesViewModel : ObservableObject
     IDisposable? _subscription;
     IDispatcherTimer? _timer;
     DateTime _scanStartedAt;
+    bool _starting;
 
     public DevicesViewModel(BluetoothService bt) => _bt = bt;
 
@@ -28,6 +29,7 @@ public partial class DevicesViewModel : ObservableObject
     string? message;
 
     [ObservableProperty] bool isSearching;
+    [ObservableProperty] bool canOpenSettings;
 
     public bool HasMessage => !string.IsNullOrEmpty(Message);
 
@@ -36,34 +38,46 @@ public partial class DevicesViewModel : ObservableObject
     [RelayCommand]
     public async Task StartAsync()
     {
-        if (_subscription is not null) return;
+        if (_subscription is not null || _starting) return;
 
+        _starting = true;
+        try { await StartCoreAsync(); }
+        finally { _starting = false; }
+    }
+
+    async Task StartCoreAsync()
+    {
         if (!_bt.IsSupported)
         {
-            Message = "Bluetooth is not supported on this device.";
+            ShowMessage("Bluetooth is not supported on this device.");
             return;
         }
 
         if (!await _bt.EnsurePermissionsAsync())
         {
-            Message = "Bluetooth permission is required. Grant it in the app settings.";
+            ShowMessage("Permission is required to find nearby devices. Allow it in the app settings.", openSettings: true);
             return;
         }
 
         if (!_bt.IsEnabled)
         {
-            Message = "Bluetooth is turned off. Turn it on and tap “Try again”.";
+            ShowMessage("Bluetooth is turned off. Turn it on and tap “Try again”.");
             return;
         }
-
-        if (_subscription is not null) return;
 
         _scanStartedAt = DateTime.UtcNow;
         _paired = _bt.GetPairedDevices();
         _subscription = _bt.Subscribe(OnSample);
-        if (_subscription is null) { Message = "Could not start scanning."; return; }
+        if (_subscription is null)
+        {
+            ShowMessage("Could not start scanning. Tap “Try again”.");
+            return;
+        }
 
-        Message = null;
+        _bt.ScanFailed -= OnScanFailed;
+        _bt.ScanFailed += OnScanFailed;
+
+        ShowMessage(null);
         IsSearching = true;
 
         _timer ??= Application.Current!.Dispatcher.CreateTimer();
@@ -75,12 +89,28 @@ public partial class DevicesViewModel : ObservableObject
 
     public void Stop()
     {
+        _bt.ScanFailed -= OnScanFailed;
         _subscription?.Dispose();
         _subscription = null;
         _timer?.Stop();
 
         IsSearching = false;
     }
+
+    void ShowMessage(string? text, bool openSettings = false)
+    {
+        Message = text;
+        CanOpenSettings = openSettings;
+    }
+
+    void OnScanFailed()
+    {
+        Stop();
+        ShowMessage("Scanning failed. Wait a few seconds and tap “Try again”.");
+    }
+
+    [RelayCommand]
+    void OpenSettings() => AppInfo.ShowSettingsUI();
 
     void OnSample(ScanSample s)
     {

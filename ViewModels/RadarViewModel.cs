@@ -60,6 +60,8 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
         _subscription = _bt.Subscribe(OnSample);
         if (_subscription is null) { Status = "Could not start scanning."; return; }
 
+        _bt.ScanFailed -= OnScanFailed;
+        _bt.ScanFailed += OnScanFailed;
         _timer ??= Application.Current!.Dispatcher.CreateTimer();
         _timer.Interval = TimeSpan.FromMilliseconds(250);
         _timer.Tick -= OnTick;
@@ -69,9 +71,17 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
 
     public void Stop()
     {
+        _bt.ScanFailed -= OnScanFailed;
         _subscription?.Dispose();
         _subscription = null;
         _timer?.Stop();
+    }
+
+    void OnScanFailed()
+    {
+        Stop();
+        ResetReading();
+        Status = "Scan failed";
     }
 
     void OnSample(ScanSample s)

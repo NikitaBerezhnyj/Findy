@@ -11,14 +11,16 @@ public class BluetoothService
 {
     readonly BluetoothAdapter? _adapter =
         (Platform.AppContext.GetSystemService(Context.BluetoothService) as BluetoothManager)?.Adapter;
-
     readonly ConcurrentDictionary<string, (string Category, string Type)> _info = new();
+    static readonly TimeSpan StopDelay = TimeSpan.FromSeconds(1.5);
 
     Action<ScanSample>[] _handlers = [];
     RssiScanCallback? _callback;
+    CancellationTokenSource? _stopCts;
 
     public bool IsSupported => _adapter is not null;
     public bool IsEnabled => _adapter?.IsEnabled == true;
+    public event Action? ScanFailed;
 
     public async Task<bool> EnsurePermissionsAsync()
     {
@@ -43,8 +45,8 @@ public class BluetoothService
 
     public IDisposable? Subscribe(Action<ScanSample> handler)
     {
-        if (_handlers.Length == 0 && !StartScan())
-            return null;
+        CancelPendingStop();
+        if (_callback is null && !StartScan()) return null;
 
         _handlers = [.. _handlers, handler];
         return new Subscription(() => Unsubscribe(handler));
@@ -53,7 +55,25 @@ public class BluetoothService
     void Unsubscribe(Action<ScanSample> handler)
     {
         _handlers = _handlers.Where(h => h != handler).ToArray();
+        if (_handlers.Length == 0) _ = StopAfterDelayAsync();
+    }
+
+    async Task StopAfterDelayAsync()
+    {
+        CancelPendingStop();
+        var cts = _stopCts = new CancellationTokenSource();
+
+        try { await Task.Delay(StopDelay, cts.Token); }
+        catch (OperationCanceledException) { return; }
+
+        _stopCts = null;
         if (_handlers.Length == 0) StopScan();
+    }
+
+    void CancelPendingStop()
+    {
+        _stopCts?.Cancel();
+        _stopCts = null;
     }
 
     bool StartScan()
@@ -62,7 +82,7 @@ public class BluetoothService
         if (scanner is null) return false;
 
         _info.Clear();
-        _callback = new RssiScanCallback(OnResult);
+        _callback = new RssiScanCallback(OnResult, OnFailed);
 
         var settings = new ScanSettings.Builder()!
             .SetScanMode(Android.Bluetooth.LE.ScanMode.LowLatency)!
@@ -79,6 +99,16 @@ public class BluetoothService
             _callback = null;
             return false;
         }
+    }
+
+    void OnFailed(ScanFailure code)
+    {
+        Debug.WriteLine($"Findy: scan failed {code}");
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            _callback = null;
+            ScanFailed?.Invoke();
+        });
     }
 
     void StopScan()
