@@ -36,7 +36,7 @@ public class BluetoothService
         foreach (var d in _adapter.BondedDevices)
         {
             if (d.Name is null) continue;
-            result.Add(new BtDevice(d.Name, d.Address ?? "", GetCategory(d), GetLinkType(d)));
+            result.Add(new BtDevice(d.Name, GetCategory(d)));
         }
         return result;
     }

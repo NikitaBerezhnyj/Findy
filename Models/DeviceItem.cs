@@ -35,32 +35,9 @@ public partial class DevicesItem : ObservableObject
 
     public string LinkChip => BtType;
 
-    public string QualityText => SignalLevel switch
-    {
-        >= 0.75 => "Excellent signal",
-        >= 0.5 => "Good signal",
-        >= 0.25 => "Weak signal",
-        _ => "Very weak signal"
-    };
+    public string QualityText => SignalScale.Quality(SignalLevel);
 
-    public string LinkHelp
-    {
-        get
-        {
-            var kind = BtType switch
-            {
-                "Dual" => "Dual: works as both Classic and BLE. Typical for earbuds and phones.",
-                "LE" => "LE: works only over Bluetooth Low Energy. Typical for watches, bands and beacons.",
-                _ => "Connection type is unknown."
-            };
-
-            var chance = IsConnectable
-                ? "The device accepts connections, so it looks like earbuds, a watch or a phone. Its signal is visible, so tracking it should work: good chances."
-                : "The device only broadcasts a signal and does not accept connections (beacon, tracker, sensor). You can track it, but it is less likely to be earbuds or a watch.";
-
-            return $"{kind}\n\n{chance}\n\nThis is an estimate based on the signal type, not a guarantee.";
-        }
-    }
+    public string LinkHelp => LinkInfo.Help(BtType, IsConnectable);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(KindIcon), nameof(KindText))]
@@ -107,7 +84,7 @@ public partial class DevicesItem : ObservableObject
 
     public void Publish()
     {
-        var level = Math.Clamp((Rssi + 95) / 65.0, 0, 1);
+        var level = SignalScale.Level(Rssi);
         if (Math.Abs(level - SignalLevel) > 0.005)
         {
             SignalLevel = level;

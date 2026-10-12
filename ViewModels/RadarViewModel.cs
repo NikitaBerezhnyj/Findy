@@ -107,7 +107,7 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
         TrendText = delta > TrendThresholdDb ? "▲ Closer"
                   : delta < -TrendThresholdDb ? "▼ Farther"
                   : "● No change";
-        SignalLevel = Math.Clamp((smoothed + 95) / 65.0, 0, 1);
+        SignalLevel = SignalScale.Level(smoothed);
         RssiText = $"{smoothed:0} dBm";
         DebugInfo = $"Raw RSSI: {_rawRssi} dBm";
     }
