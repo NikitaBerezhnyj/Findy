@@ -40,7 +40,8 @@ public partial class DevicesItem : ObservableObject
     public string LinkHelp => LinkInfo.Help(BtType, IsConnectable);
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(KindIcon), nameof(KindText))]
+    [NotifyPropertyChangedFor(nameof(KindIcon), nameof(KindText), nameof(HasKind))]
+
     string category = "";
 
     [ObservableProperty] string title = "";
@@ -51,25 +52,28 @@ public partial class DevicesItem : ObservableObject
 
     [ObservableProperty] bool isPaired;
 
+    public bool HasKind => Category != DeviceKind.Unknown;
+
     public void SetIdentity(string? bleName, BtDevice? paired)
     {
         BleName = bleName;
         IsPaired = paired is not null;
 
+        var tail = Address.Length >= 5 ? Address[^5..] : Address;
+
         if (paired is not null)
         {
             Title = paired.Name;
-            Subtitle = $"Seen as {bleName}";
+            Subtitle = $"{bleName} · {tail}";
             if (Category == DeviceKind.Unknown) Category = paired.Category;
         }
         else if (bleName is not null)
         {
             Title = bleName;
-            Subtitle = null;
+            Subtitle = $"ID · {tail}";
         }
         else
         {
-            var tail = Address.Length >= 5 ? Address[^5..] : Address;
             Title = "Unknown device";
             Subtitle = $"ID · {tail}";
         }

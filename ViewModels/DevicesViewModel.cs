@@ -11,6 +11,10 @@ public partial class DevicesViewModel : ObservableObject
     private DateTime _lastScroll;
 
     static readonly TimeSpan Ttl = TimeSpan.FromSeconds(6);
+    static readonly TimeSpan EmptyHintAfter = TimeSpan.FromSeconds(12);
+
+    [ObservableProperty] string emptyHint = "";
+    [ObservableProperty] bool hasEmptyHint;
 
     readonly BluetoothService _bt;
     readonly Dictionary<string, DevicesItem> _items = [];
@@ -79,6 +83,7 @@ public partial class DevicesViewModel : ObservableObject
 
         ShowMessage(null);
         IsSearching = true;
+        UpdateEmptyState(DateTime.UtcNow);
 
         _timer ??= Application.Current!.Dispatcher.CreateTimer();
         _timer.Interval = TimeSpan.FromSeconds(1);
@@ -95,6 +100,7 @@ public partial class DevicesViewModel : ObservableObject
         _timer?.Stop();
 
         IsSearching = false;
+        HasEmptyHint = false;
     }
 
     void ShowMessage(string? text, bool openSettings = false)
@@ -156,6 +162,19 @@ public partial class DevicesViewModel : ObservableObject
             else if (from != i) Items.Move(from, i);
         }
 
-        IsSearching = _subscription is not null && Items.Count == 0;
+        UpdateEmptyState(now);
+    }
+
+    void UpdateEmptyState(DateTime now)
+    {
+        var empty = _subscription is not null && Items.Count == 0;
+
+        IsSearching = empty;
+        HasEmptyHint = empty;
+
+        if (empty)
+            EmptyHint = now - _scanStartedAt > EmptyHintAfter
+                ? "No devices found. Make sure the device is on and nearby."
+                : "Looking for devices…";
     }
 }
