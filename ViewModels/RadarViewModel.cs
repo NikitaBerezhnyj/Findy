@@ -12,35 +12,51 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
     const double PathLoss = 2.5;
     const int TrendWindowMs = 2000;
     const int TrendThresholdDb = 3;
+
     static readonly TimeSpan LostAfter = TimeSpan.FromSeconds(3);
 
     readonly BluetoothService _bt;
     readonly Queue<(DateTime Time, double Rssi)> _history = new();
-    TrackTarget? _target;
-    IDisposable? _subscription;
-    IDispatcherTimer? _timer;
-    double? _smoothed;
-    DateTime _lastSeen;
-    bool _dirty;
-    int _rawRssi;
+
+    private TrackTarget? _target;
+    private IDisposable? _subscription;
+    private IDispatcherTimer? _timer;
+    private double? _smoothed;
+    private DateTime _lastSeen;
+    private bool _dirty;
+    private int _rawRssi;
 
     public RadarViewModel(BluetoothService bt) => _bt = bt;
 
     public bool HasSubtitle => !string.IsNullOrEmpty(Subtitle);
 
-    [ObservableProperty] string title = "";
+    [ObservableProperty]
+    string title = "";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSubtitle))]
     string? subtitle;
 
-    [ObservableProperty] MaterialIcons kindIcon = MaterialIcons.HelpOutline;
-    [ObservableProperty] string status = "Searching…";
-    [ObservableProperty] string distanceText = "—";
-    [ObservableProperty] string trendText = "";
-    [ObservableProperty] string rssiText = "";
-    [ObservableProperty] string debugInfo = "";
-    [ObservableProperty] double signalLevel;
+    [ObservableProperty]
+    MaterialIcons kindIcon = MaterialIcons.HelpOutline;
+
+    [ObservableProperty]
+    string status = "Searching…";
+
+    [ObservableProperty]
+    string distanceText = "—";
+
+    [ObservableProperty]
+    string trendText = "";
+
+    [ObservableProperty]
+    string rssiText = "";
+
+    [ObservableProperty]
+    string debugInfo = "";
+
+    [ObservableProperty]
+    double signalLevel;
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {

@@ -7,8 +7,9 @@ namespace Findy.Pages;
 public partial class DevicesPage : ContentPage
 {
     readonly DevicesViewModel _vm;
-    bool _navigating;
-    Window? _window;
+
+    private bool _navigating;
+    private Window? _window;
 
     public DevicesPage(DevicesViewModel vm)
     {

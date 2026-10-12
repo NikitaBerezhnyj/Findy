@@ -7,7 +7,8 @@ namespace Findy.Pages;
 public partial class RadarPage : ContentPage
 {
     readonly RadarViewModel _vm;
-    Window? _window;
+
+    private Window? _window;
 
     public RadarPage(RadarViewModel vm)
     {

@@ -8,21 +8,24 @@ namespace Findy.ViewModels;
 
 public partial class DevicesViewModel : ObservableObject
 {
-    private DateTime _lastScroll;
-
     static readonly TimeSpan Ttl = TimeSpan.FromSeconds(6);
     static readonly TimeSpan EmptyHintAfter = TimeSpan.FromSeconds(12);
 
-    [ObservableProperty] string emptyHint = "";
-    [ObservableProperty] bool hasEmptyHint;
-
     readonly BluetoothService _bt;
     readonly Dictionary<string, DevicesItem> _items = [];
-    List<BtDevice> _paired = [];
-    IDisposable? _subscription;
-    IDispatcherTimer? _timer;
-    DateTime _scanStartedAt;
-    bool _starting;
+
+    private DateTime _lastScroll;
+    private List<BtDevice> _paired = [];
+    private IDisposable? _subscription;
+    private IDispatcherTimer? _timer;
+    private DateTime _scanStartedAt;
+    private bool _starting;
+
+    [ObservableProperty]
+    string emptyHint = "";
+
+    [ObservableProperty]
+    bool hasEmptyHint;
 
     public DevicesViewModel(BluetoothService bt) => _bt = bt;
 

@@ -9,14 +9,15 @@ namespace Findy.Services;
 
 public class BluetoothService
 {
+    static readonly TimeSpan StopDelay = TimeSpan.FromSeconds(1.5);
+
     readonly BluetoothAdapter? _adapter =
         (Platform.AppContext.GetSystemService(Context.BluetoothService) as BluetoothManager)?.Adapter;
     readonly ConcurrentDictionary<string, (string Category, string Type)> _info = new();
-    static readonly TimeSpan StopDelay = TimeSpan.FromSeconds(1.5);
 
-    Action<ScanSample>[] _handlers = [];
-    RssiScanCallback? _callback;
-    CancellationTokenSource? _stopCts;
+    private Action<ScanSample>[] _handlers = [];
+    private RssiScanCallback? _callback;
+    private CancellationTokenSource? _stopCts;
 
     public bool IsSupported => _adapter is not null;
     public bool IsEnabled => _adapter?.IsEnabled == true;
