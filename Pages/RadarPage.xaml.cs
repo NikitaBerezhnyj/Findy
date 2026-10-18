@@ -6,6 +6,8 @@ namespace Findy.Pages;
 
 public partial class RadarPage : ContentPage
 {
+    const double InnerRatio = 160.0 / 260.0;
+
     readonly RadarViewModel _vm;
 
     private Window? _window;
@@ -58,7 +60,10 @@ public partial class RadarPage : ContentPage
     {
         if (e.PropertyName != nameof(RadarViewModel.SignalLevel)) return;
 
+        var level = _vm.SignalLevel;
+        var scale = level <= 0 ? 0 : InnerRatio + level * (1 - InnerRatio);
+
         Pulse.CancelAnimations();
-        await Pulse.ScaleToAsync(_vm.SignalLevel, 300, Easing.CubicOut);
+        await Pulse.ScaleToAsync(scale, 300, Easing.CubicOut);
     }
 }

@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using MauiIcons.Material;
 using Findy.Models;
 using Findy.Services;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Findy.ViewModels;
 
@@ -12,6 +13,8 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
     const double PathLoss = 2.5;
     const int TrendWindowMs = 2000;
     const int TrendThresholdDb = 3;
+    const string VibrationKey = "vibration";
+    const int BuzzMs = 50;
 
     static readonly TimeSpan LostAfter = TimeSpan.FromSeconds(5);
 
@@ -24,10 +27,11 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
     private double? _smoothed;
     private DateTime _lastSeen;
     private bool _dirty;
+    private DateTime _nextBuzz;
 
     public RadarViewModel(BluetoothService bt) => _bt = bt;
-
     public bool HasSubtitle => !string.IsNullOrEmpty(Subtitle);
+    public string VibrationText => VibrationEnabled ? "Vibration on" : "Vibration off";
 
     [ObservableProperty]
     string title = "";
@@ -56,6 +60,16 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
 
     [ObservableProperty]
     bool isLost;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(VibrationText))]
+    bool vibrationEnabled = Preferences.Default.Get(VibrationKey, true);
+
+    [RelayCommand]
+    void ToggleVibration() => VibrationEnabled = !VibrationEnabled;
+
+    partial void OnVibrationEnabledChanged(bool value) =>
+        Preferences.Default.Set(VibrationKey, value);
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
@@ -143,6 +157,17 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
         RssiText = $"{smoothed:0} dBm";
     }
 
+    void Buzz()
+    {
+        if (!VibrationEnabled || _smoothed is null || !Vibration.Default.IsSupported) return;
+
+        var now = DateTime.UtcNow;
+        if (now < _nextBuzz) return;
+
+        Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(BuzzMs));
+        _nextBuzz = now + TimeSpan.FromMilliseconds(1000 - 750 * SignalLevel);
+    }
+
     void OnTick(object? sender, EventArgs e)
     {
         if (_smoothed is not null)
@@ -155,9 +180,13 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
             }
         }
 
-        if (!_dirty) return;
-        _dirty = false;
-        Publish();
+        if (_dirty)
+        {
+            _dirty = false;
+            Publish();
+        }
+
+        Buzz();
     }
 
     void ShowLost(TimeSpan silence)

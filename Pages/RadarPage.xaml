@@ -1,53 +1,143 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentPage x:Class="Findy.Pages.RadarPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Findy.ViewModels"
              xmlns:mi="http://www.aathifmahir.com/dotnet/2022/maui/icons"
-             x:Class="Findy.Pages.RadarPage"
-             x:DataType="vm:RadarViewModel"
-             Title="Tracking">
+             Title="Tracking"
+             x:DataType="vm:RadarViewModel">
 
-    <Grid RowDefinitions="Auto,*,Auto" Padding="24,20,24,28" RowSpacing="20">
+    <Grid Padding="24,20,24,28"
+          RowDefinitions="Auto,*,Auto"
+          RowSpacing="20">
         <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
-            <Border WidthRequest="56" HeightRequest="56" Padding="0"
+            <Border Padding="0"
+                    WidthRequest="56"
+                    HeightRequest="56"
                     HorizontalOptions="Center"
                     StrokeShape="RoundRectangle 16"
                     Stroke="Transparent"
                     BackgroundColor="{AppThemeBinding Light={StaticResource TrackLight}, Dark={StaticResource TrackDark}}">
-                <mi:MauiIcon
-                    Icon="{Binding KindIcon}"
-                    IconSize="24"
-                    IconColor="{StaticResource Accent}"
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center" />
+                <mi:MauiIcon Icon="{Binding KindIcon}"
+                             IconSize="24"
+                             IconColor="{StaticResource Accent}"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center" />
             </Border>
-            
-            <Label Text="{Binding Title}" FontFamily="OpenSansSemibold" FontSize="20" HorizontalTextAlignment="Center" MaxLines="2" LineBreakMode="TailTruncation" Margin="0,4,0,0"/>
-            <Label Text="{Binding Subtitle}" IsVisible="{Binding HasSubtitle}" Style="{StaticResource Muted}" FontSize="12" HorizontalTextAlignment="Center" />
-            
-            <Border Padding="14,6" Margin="0,4,0,0" StrokeShape="RoundRectangle 20" BackgroundColor="{StaticResource AccentSoft}" Stroke="Transparent">
-                <Label Text="{Binding Status}" FontSize="15" FontFamily="OpenSansSemibold" TextColor="{StaticResource Accent}" HorizontalTextAlignment="Center" />
+
+            <Label Margin="0,4,0,0"
+                   Text="{Binding Title}"
+                   FontFamily="OpenSansSemibold"
+                   FontSize="20"
+                   HorizontalTextAlignment="Center"
+                   MaxLines="2"
+                   LineBreakMode="TailTruncation" />
+            <Label Text="{Binding Subtitle}"
+                   IsVisible="{Binding HasSubtitle}"
+                   Style="{StaticResource Muted}"
+                   FontSize="12"
+                   HorizontalTextAlignment="Center" />
+
+            <Border Margin="0,4,0,0"
+                    Padding="14,6"
+                    StrokeShape="RoundRectangle 20"
+                    BackgroundColor="{StaticResource AccentSoft}"
+                    Stroke="Transparent">
+                <Label Text="{Binding Status}"
+                       FontSize="15"
+                       FontFamily="OpenSansSemibold"
+                       TextColor="{StaticResource Accent}"
+                       HorizontalTextAlignment="Center" />
             </Border>
         </VerticalStackLayout>
-        
-        <Grid Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center">
-            <Border WidthRequest="260" HeightRequest="260" StrokeShape="RoundRectangle 130" Stroke="{StaticResource Accent}" StrokeThickness="1.5" BackgroundColor="Transparent" Opacity="0.25" HorizontalOptions="Center" VerticalOptions="Center" />
-            <Border x:Name="Pulse" WidthRequest="260" HeightRequest="260" StrokeShape="RoundRectangle 130" Stroke="Transparent" BackgroundColor="{StaticResource Accent}" Opacity="0.15" Scale="0" HorizontalOptions="Center" VerticalOptions="Center" />
 
-            <Border WidthRequest="160" HeightRequest="160" StrokeShape="RoundRectangle 80" Stroke="Transparent" BackgroundColor="{AppThemeBinding Light={StaticResource TrackLight}, Dark={StaticResource TrackDark}}" HorizontalOptions="Center" VerticalOptions="Center">
-                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="2">
-                    <Label Text="{Binding DistanceText}" FontFamily="OpenSansSemibold" FontSize="36" HorizontalOptions="Center">
+        <Grid Grid.Row="1"
+              VerticalOptions="Center"
+              HorizontalOptions="Center">
+            <Border WidthRequest="260"
+                    HeightRequest="260"
+                    StrokeShape="RoundRectangle 130"
+                    Stroke="{StaticResource Accent}"
+                    StrokeThickness="1.5"
+                    BackgroundColor="Transparent"
+                    Opacity="0.25"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center" />
+            <Border x:Name="Pulse"
+                    WidthRequest="260"
+                    HeightRequest="260"
+                    StrokeShape="RoundRectangle 130"
+                    Stroke="Transparent"
+                    BackgroundColor="{StaticResource Accent}"
+                    Opacity="0.15"
+                    Scale="0"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center" />
+
+            <Border WidthRequest="160"
+                    HeightRequest="160"
+                    StrokeShape="RoundRectangle 80"
+                    Stroke="Transparent"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource TrackLight}, Dark={StaticResource TrackDark}}"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                <VerticalStackLayout VerticalOptions="Center"
+                                     HorizontalOptions="Center"
+                                     Spacing="2">
+                    <Label Text="{Binding DistanceText}"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="36"
+                           HorizontalOptions="Center">
                         <Label.Triggers>
-                            <DataTrigger TargetType="Label" Binding="{Binding IsLost}" Value="True">
+                            <DataTrigger TargetType="Label"
+                                         Binding="{Binding IsLost}"
+                                         Value="True">
                                 <Setter Property="Opacity" Value="0.4" />
                             </DataTrigger>
                         </Label.Triggers>
                     </Label>
-                    <Label Text="{Binding TrendText}" Style="{StaticResource Muted}" FontSize="16" HorizontalOptions="Center" />
+                    <Label Text="{Binding TrendText}"
+                           Style="{StaticResource Muted}"
+                           FontSize="16"
+                           HorizontalOptions="Center" />
                 </VerticalStackLayout>
             </Border>
         </Grid>
-        
-        <Label Grid.Row="2" Text="{Binding RssiText}" Style="{StaticResource Muted}" FontSize="14" HorizontalOptions="Center" />
+
+        <VerticalStackLayout Grid.Row="2"
+                             Spacing="14"
+                             HorizontalOptions="Center">
+            <Label Text="{Binding RssiText}"
+                   Style="{StaticResource Muted}"
+                   FontSize="14"
+                   HorizontalOptions="Center" />
+
+            <Border Padding="16,10"
+                    HorizontalOptions="Center"
+                    StrokeShape="RoundRectangle 20"
+                    Stroke="Transparent"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource TrackLight}, Dark={StaticResource TrackDark}}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ToggleVibrationCommand}" />
+                </Border.GestureRecognizers>
+                <Border.Triggers>
+                    <DataTrigger TargetType="Border"
+                                 Binding="{Binding VibrationEnabled}"
+                                 Value="False">
+                        <Setter Property="Opacity" Value="0.5" />
+                    </DataTrigger>
+                </Border.Triggers>
+
+                <HorizontalStackLayout Spacing="8">
+                    <mi:MauiIcon Icon="{x:Static mi:MaterialIcons.Vibration}"
+                                 IconSize="18"
+                                 IconColor="{StaticResource Accent}"
+                                 VerticalOptions="Center" />
+                    <Label Text="{Binding VibrationText}"
+                           FontSize="14"
+                           VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Border>
+        </VerticalStackLayout>
     </Grid>
 </ContentPage>
