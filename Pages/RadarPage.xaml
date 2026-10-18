@@ -25,8 +25,8 @@
             <Label Text="{Binding Title}" FontFamily="OpenSansSemibold" FontSize="20" HorizontalTextAlignment="Center" MaxLines="2" LineBreakMode="TailTruncation" Margin="0,4,0,0"/>
             <Label Text="{Binding Subtitle}" IsVisible="{Binding HasSubtitle}" Style="{StaticResource Muted}" FontSize="12" HorizontalTextAlignment="Center" />
             
-            <Border Padding="12,4" Margin="0,4,0,0" StrokeShape="RoundRectangle 20" BackgroundColor="{StaticResource AccentSoft}" Stroke="Transparent">
-                <Label Text="{Binding Status}" FontSize="13" FontFamily="OpenSansSemibold" TextColor="{StaticResource Accent}" HorizontalTextAlignment="Center" />
+            <Border Padding="14,6" Margin="0,4,0,0" StrokeShape="RoundRectangle 20" BackgroundColor="{StaticResource AccentSoft}" Stroke="Transparent">
+                <Label Text="{Binding Status}" FontSize="15" FontFamily="OpenSansSemibold" TextColor="{StaticResource Accent}" HorizontalTextAlignment="Center" />
             </Border>
         </VerticalStackLayout>
         
@@ -36,15 +36,18 @@
 
             <Border WidthRequest="160" HeightRequest="160" StrokeShape="RoundRectangle 80" Stroke="Transparent" BackgroundColor="{AppThemeBinding Light={StaticResource TrackLight}, Dark={StaticResource TrackDark}}" HorizontalOptions="Center" VerticalOptions="Center">
                 <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="2">
-                    <Label Text="{Binding DistanceText}" FontFamily="OpenSansSemibold" FontSize="36" HorizontalOptions="Center" />
-                    <Label Text="{Binding TrendText}" Style="{StaticResource Muted}" FontSize="14" HorizontalOptions="Center" />
+                    <Label Text="{Binding DistanceText}" FontFamily="OpenSansSemibold" FontSize="36" HorizontalOptions="Center">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding IsLost}" Value="True">
+                                <Setter Property="Opacity" Value="0.4" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                    <Label Text="{Binding TrendText}" Style="{StaticResource Muted}" FontSize="16" HorizontalOptions="Center" />
                 </VerticalStackLayout>
             </Border>
         </Grid>
         
-        <VerticalStackLayout Grid.Row="2" Spacing="3" HorizontalOptions="Center">
-            <Label Text="{Binding RssiText}" Style="{StaticResource Muted}" FontSize="12" HorizontalOptions="Center" />
-            <Label Text="{Binding DebugInfo}" Style="{StaticResource Muted}" FontSize="10" HorizontalOptions="Center" Opacity="0.7" />
-        </VerticalStackLayout>
+        <Label Grid.Row="2" Text="{Binding RssiText}" Style="{StaticResource Muted}" FontSize="14" HorizontalOptions="Center" />
     </Grid>
 </ContentPage>

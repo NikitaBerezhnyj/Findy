@@ -13,7 +13,7 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
     const int TrendWindowMs = 2000;
     const int TrendThresholdDb = 3;
 
-    static readonly TimeSpan LostAfter = TimeSpan.FromSeconds(3);
+    static readonly TimeSpan LostAfter = TimeSpan.FromSeconds(5);
 
     readonly BluetoothService _bt;
     readonly Queue<(DateTime Time, double Rssi)> _history = new();
@@ -24,7 +24,6 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
     private double? _smoothed;
     private DateTime _lastSeen;
     private bool _dirty;
-    private int _rawRssi;
 
     public RadarViewModel(BluetoothService bt) => _bt = bt;
 
@@ -53,10 +52,10 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
     string rssiText = "";
 
     [ObservableProperty]
-    string debugInfo = "";
+    double signalLevel;
 
     [ObservableProperty]
-    double signalLevel;
+    bool isLost;
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
@@ -112,9 +111,16 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
     void Track(ScanSample s)
     {
         var now = DateTime.UtcNow;
+
+        if (IsLost)
+        {
+            _smoothed = null;
+            _history.Clear();
+            IsLost = false;
+        }
+
         _lastSeen = now;
         _smoothed = _smoothed is null ? s.Rssi : Alpha * s.Rssi + (1 - Alpha) * _smoothed;
-        _rawRssi = s.Rssi;
 
         _history.Enqueue((now, _smoothed.Value));
         while ((now - _history.Peek().Time).TotalMilliseconds > TrendWindowMs)
@@ -135,16 +141,18 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
                   : "● No change";
         SignalLevel = SignalScale.Level(smoothed);
         RssiText = $"{smoothed:0} dBm";
-        DebugInfo = $"Raw RSSI: {_rawRssi} dBm";
     }
 
     void OnTick(object? sender, EventArgs e)
     {
-        if (_smoothed is not null && DateTime.UtcNow - _lastSeen > LostAfter)
+        if (_smoothed is not null)
         {
-            ResetReading();
-            Status = "Signal lost";
-            return;
+            var silence = DateTime.UtcNow - _lastSeen;
+            if (silence > LostAfter)
+            {
+                ShowLost(silence);
+                return;
+            }
         }
 
         if (!_dirty) return;
@@ -152,16 +160,24 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
         Publish();
     }
 
+    void ShowLost(TimeSpan silence)
+    {
+        IsLost = true;
+        Status = "Signal lost";
+        TrendText = $"Seen {(int)silence.TotalSeconds} s ago";
+        SignalLevel = 0;
+    }
+
     void ResetReading()
     {
         _smoothed = null;
         _dirty = false;
         _history.Clear();
+        IsLost = false;
         Status = "Searching…";
         DistanceText = "—";
         TrendText = "";
         RssiText = "";
-        DebugInfo = "";
         SignalLevel = 0;
     }
 
