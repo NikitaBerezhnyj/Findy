@@ -14,7 +14,7 @@ public partial class RadarViewModel : ObservableObject, IQueryAttributable
     const int TrendWindowMs = 2000;
     const int TrendThresholdDb = 3;
     const string VibrationKey = "vibration";
-    const int BuzzMs = 50;
+    const int BuzzMs = 90;
 
     static readonly TimeSpan LostAfter = TimeSpan.FromSeconds(5);
 
